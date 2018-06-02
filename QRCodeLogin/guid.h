@@ -1,0 +1,17 @@
+//
+// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
+// PARTICULAR PURPOSE.
+//
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+
+// {14291887-8DC8-4D1B-A206-5FA72D672164}
+//IMPLEMENT_OLECREATE(<< class >> , << external_name >> ,
+//	0x14291887, 0x8dc8, 0x4d1b, 0xa2, 0x6, 0x5f, 0xa7, 0x2d, 0x67, 0x21, 0x64);
+
+
+DEFINE_GUID(CLSID_QRCodeLoginCredential, 0x14291887, 0x8dc8, 0x4d1b, 0xa2, 0x6, 0x5f, 0xa7, 0x2d, 0x67, 0x21, 0x64);
+//DEFINE_GUID(CLSID_SampleHardwareEventCredentialProvider, 0x75a22df0, 0xb81d, 0x46ed, 0xb1, 0x19, 0xcd, 0x30, 0x50, 0x7b, 0xd6, 0x15);
+//DEFINE_GUID(CLSID_SampleWrapExistingCredentialProvider, 0xacfc407b, 0x266c, 0x4085, 0x8d, 0xae, 0xf3, 0xe2, 0x76, 0x33, 0x6e, 0x4b);

@@ -1,0 +1,14 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{14291887-8DC8-4D1B-A206-5FA72D672164}]
+@="QRCodeLogin"
+
+[HKEY_CLASSES_ROOT\CLSID\{14291887-8DC8-4D1B-A206-5FA72D672164}]
+@="QRCodeLogin"
+
+[HKEY_CLASSES_ROOT\CLSID\{14291887-8DC8-4D1B-A206-5FA72D672164}\InprocServer32]
+@="QRCodeLogin.dll"
+"ThreadingModel"="Apartment"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Provider Filters\{14291887-8DC8-4D1B-A206-5FA72D672164}]
+@="QRCodeLogin"
