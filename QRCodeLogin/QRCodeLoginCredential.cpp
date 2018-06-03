@@ -401,12 +401,10 @@ HRESULT QRCodeLoginCredential::GetBitmapValue(
 HRESULT QRCodeLoginCredential::GetSubmitButtonValue(
 	__in DWORD dwFieldID,
 	__out DWORD* pdwAdjacentTo
-)
-{
+){
 	HRESULT hr = E_UNEXPECTED;
 
-	if (_pWrappedCredential != NULL)
-	{
+	if (_pWrappedCredential != NULL){
 		hr = _pWrappedCredential->GetSubmitButtonValue(dwFieldID, pdwAdjacentTo);
 	}
 
@@ -416,12 +414,10 @@ HRESULT QRCodeLoginCredential::GetSubmitButtonValue(
 HRESULT QRCodeLoginCredential::SetStringValue(
 	__in DWORD dwFieldID,
 	__in PCWSTR pwz
-)
-{
+){
 	HRESULT hr = E_UNEXPECTED;
 
-	if (_pWrappedCredential != NULL)
-	{
+	if (_pWrappedCredential != NULL){
 		hr = _pWrappedCredential->SetStringValue(dwFieldID, pwz);
 	}
 
@@ -433,14 +429,11 @@ HRESULT QRCodeLoginCredential::GetCheckboxValue(
 	__in DWORD dwFieldID,
 	__out BOOL* pbChecked,
 	__deref_out PWSTR* ppwszLabel
-)
-{
+){
 	HRESULT hr = E_UNEXPECTED;
 
-	if (_pWrappedCredential != NULL)
-	{
-		if (_IsFieldInWrappedCredential(dwFieldID))
-		{
+	if (_pWrappedCredential != NULL){
+		if (_IsFieldInWrappedCredential(dwFieldID)){
 			hr = _pWrappedCredential->GetCheckboxValue(dwFieldID, pbChecked, ppwszLabel);
 		}
 	}
@@ -451,8 +444,7 @@ HRESULT QRCodeLoginCredential::GetCheckboxValue(
 HRESULT QRCodeLoginCredential::SetCheckboxValue(
 	__in DWORD dwFieldID,
 	__in BOOL bChecked
-)
-{
+){
 	HRESULT hr = E_UNEXPECTED;
 
 	if (_pWrappedCredential != NULL)
@@ -463,8 +455,7 @@ HRESULT QRCodeLoginCredential::SetCheckboxValue(
 	return hr;
 }
 
-HRESULT QRCodeLoginCredential::CommandLinkClicked(__in DWORD dwFieldID)
-{
+HRESULT QRCodeLoginCredential::CommandLinkClicked(__in DWORD dwFieldID){
 	HRESULT hr = E_UNEXPECTED;
 
 	if (_pWrappedCredential != NULL)
@@ -487,8 +478,7 @@ HRESULT QRCodeLoginCredential::GetSerialization(
 	__out CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
 	__deref_out_opt PWSTR* ppwszOptionalStatusText,
 	__out CREDENTIAL_PROVIDER_STATUS_ICON* pcpsiOptionalStatusIcon
-)
-{
+){
 	HRESULT hr = E_UNEXPECTED;
 
 	if (_pWrappedCredential != NULL)
@@ -506,12 +496,10 @@ HRESULT QRCodeLoginCredential::ReportResult(
 	__in NTSTATUS ntsSubstatus,
 	__deref_out_opt PWSTR* ppwszOptionalStatusText,
 	__out CREDENTIAL_PROVIDER_STATUS_ICON* pcpsiOptionalStatusIcon
-)
-{
+){
 	HRESULT hr = E_UNEXPECTED;
 
-	if (_pWrappedCredential != NULL)
-	{
+	if (_pWrappedCredential != NULL){
 		hr = _pWrappedCredential->ReportResult(ntsStatus, ntsSubstatus, ppwszOptionalStatusText, pcpsiOptionalStatusIcon);
 	}
 
@@ -520,42 +508,40 @@ HRESULT QRCodeLoginCredential::ReportResult(
 
 BOOL QRCodeLoginCredential::_IsFieldInWrappedCredential(
 	__in DWORD dwFieldID
-)
-{
+){
 	return (dwFieldID < _dwWrappedDescriptorCount);
 }
 
 FIELD_STATE_PAIR *QRCodeLoginCredential::_LookupLocalFieldStatePair(
 	__in DWORD dwFieldID
-)
-{
+){
 	// Offset into the ID to account for the wrapped fields.
 	dwFieldID -= _dwWrappedDescriptorCount;
 
 	// If the index if valid, give it the info it wants.
-	if (dwFieldID < SFI_NUM_FIELDS)
-	{
+	if (dwFieldID < SFI_NUM_FIELDS){
 		return &(_rgFieldStatePairs[dwFieldID]);
 	}
 
 	return NULL;
 }
 
-void QRCodeLoginCredential::_CleanupEvents()
-{
+void QRCodeLoginCredential::_CleanupEvents(){
 	// Call Uninitialize before releasing our reference on the real 
 	// ICredentialProviderCredentialEvents to avoid having an
 	// invalid reference.
-	if (_pWrappedCredentialEvents != NULL)
-	{
+	if (_pWrappedCredentialEvents != NULL){
 		_pWrappedCredentialEvents->Uninitialize();
 		_pWrappedCredentialEvents->Release();
 		_pWrappedCredentialEvents = NULL;
 	}
 
-	if (_pCredProvCredentialEvents != NULL)
-	{
+	if (_pCredProvCredentialEvents != NULL){
 		_pCredProvCredentialEvents->Release();
 		_pCredProvCredentialEvents = NULL;
 	}
+}
+
+void QRCodeLoginCredential::updateCpus(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+	_cpus = cpus;
 }

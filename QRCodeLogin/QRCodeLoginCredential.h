@@ -91,6 +91,8 @@ public:
 
 	virtual ~QRCodeLoginCredential();
 
+	void updateCpus(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
+
 private:
 	BOOL                                  _IsFieldInWrappedCredential(__in DWORD dwFieldID);
 	FIELD_STATE_PAIR                     *_LookupLocalFieldStatePair(__in DWORD dwFieldID);
@@ -123,5 +125,6 @@ private:
 																						 // wrapped credential.
 
 	DWORD                                _dwDatabaseIndex;                               // The current selected item
-																						 // in our combobox.
+		
+	CREDENTIAL_PROVIDER_USAGE_SCENARIO      _cpus; // The usage scenario for which we were enumerated.// in our combobox.
 };

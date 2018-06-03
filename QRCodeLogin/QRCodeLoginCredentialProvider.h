@@ -70,9 +70,36 @@ protected:
 private:
 	void _CleanUpAllCredentials();
 
+	HRESULT VerifyCredential(CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs);
+
+
+	HRESULT VerifyField(
+		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+		__in PCWSTR pwszFild,
+		__inout DWORD *pcbOffset
+	);
+
+	HRESULT VerifyDomain(
+		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+		__inout DWORD *pcbOffset
+	);
+
+	HRESULT VerifyUserName(
+		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+		__inout DWORD *pcbOffset
+	);
+
+	HRESULT VerifyPassword(
+		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+		__inout DWORD *pcbOffset,
+		__in PCWSTR pwzPassword,
+		__in CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus
+	);
+
+
 private:
 	LONG                _cRef;
-	QRCodeLoginCredential   **_rgpCredentials;          // Pointers to the credentials which will be enumerated by this 
+	QRCodeLoginCredential   **_rgpCredentials = NULL;          // Pointers to the credentials which will be enumerated by this 
 													// Provider.
 
 	ICredentialProvider *_pWrappedProvider;         // Our wrapped provider.
@@ -80,4 +107,5 @@ private:
 	DWORD               _dwWrappedDescriptorCount;  // The number of fields on each tile of our wrapped provider's 
 													// credentials.
 	bool                _bEnumeratedSetSerialization;
+	CREDENTIAL_PROVIDER_USAGE_SCENARIO      _cpus; // The usage scenario for which we were enumerated.// in our combobox.
 };

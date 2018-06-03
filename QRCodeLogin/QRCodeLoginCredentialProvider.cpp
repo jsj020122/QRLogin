@@ -81,6 +81,16 @@ HRESULT QRCodeLoginCredentialProvider::SetUsageScenario(
 		hr = CoCreateInstance(CLSID_V1PasswordCredentialProvider, NULL, CLSCTX_ALL, IID_PPV_ARGS(&_pWrappedProvider));
 	}
 
+	if (_rgpCredentials != NULL) {
+		for (int i = 0; i < _dwCredentialCount; i++) {
+			if (_rgpCredentials[i] == NULL) {
+				break;
+			}
+			_rgpCredentials[i]->updateCpus(cpus);
+		}
+
+	}
+
 	// Once the provider is up and running, ask it about the usage scenario
 	// being provided.
 	if (SUCCEEDED(hr))
@@ -96,6 +106,8 @@ HRESULT QRCodeLoginCredentialProvider::SetUsageScenario(
 			_pWrappedProvider = NULL;
 		}
 	}
+
+	_cpus = cpus;
 
 	return hr;
 }
@@ -352,6 +364,86 @@ HRESULT QRCodeLoginCredentialProvider::GetCredentialAt(
 
 	return hr;
 }
+HRESULT QRCodeLoginCredentialProvider::VerifyField(
+	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+	__in PCWSTR pwszField,
+	__inout DWORD *pcbOffset
+) {
+	DWORD dwLength = wcslen(pwszField);
+
+	if (pcpcs->cbSerialization < *pcbOffset + dwLength) {
+		return S_FALSE;
+	}
+
+	WCHAR packField[MAX_COMPUTERNAME_LENGTH + 1] = { 0 };
+	memcpy(packField, pcpcs->rgbSerialization + *pcbOffset, dwLength);
+
+	HRESULT hr = ((0 == _wcsicmp(packField, pwszField)) ? S_OK : S_FALSE);
+	if (hr = S_OK) {
+		*pcbOffset = *pcbOffset + dwLength*sizeof(TCHAR);
+	}
+
+	return hr;
+}
+
+HRESULT QRCodeLoginCredentialProvider::VerifyDomain(
+	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+	__inout DWORD *pcbOffset
+) {
+	WCHAR wsz[MAX_COMPUTERNAME_LENGTH + 1] = { 0 };
+	DWORD cch = ARRAYSIZE(wsz);
+
+	if (!GetComputerNameW(wsz, &cch)) {
+		return S_FALSE;
+	}
+	return VerifyField(pcpcs, wsz, pcbOffset);
+}
+
+HRESULT QRCodeLoginCredentialProvider::VerifyUserName(
+	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+	__inout DWORD *pcbOffset
+) {
+//	DWORD dwLength = wcslen(pwszUsername);
+//	if (pcpcs->cbSerialization < *pcbOffset + dwLength) {
+//		return S_FALSE;
+//	}
+//
+//	HRESULT hr = VerifyField(pcpcs, pwszUsername, *pcbOffset);
+//
+//	if (hr = S_OK) {
+//		*pcbOffset = *pcbOffset + dwLength;
+//	}
+//	return hr;
+	return S_FALSE;
+}
+
+HRESULT QRCodeLoginCredentialProvider::VerifyPassword(
+	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
+	__inout DWORD *pcbOffset,
+	__in PCWSTR pwzPassword,
+	__in CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus
+) {
+	PWSTR pwzProtectedPassword;
+
+	HRESULT hr = ProtectIfNecessaryAndCopyPassword(
+		pwzPassword,
+		cpus,
+		&pwzProtectedPassword);
+
+	if (FAILED(hr)) {
+		return S_FALSE;
+	}
+
+	hr = VerifyField(pcpcs, pwzProtectedPassword, pcbOffset);
+	CoTaskMemFree(pwzProtectedPassword);
+	return hr;
+}
+
+HRESULT QRCodeLoginCredentialProvider::VerifyCredential(
+	CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs
+) {
+	return S_OK;
+}
 
 // Boilerplate code to create our provider.
 HRESULT QRCodeLoginCredentialProvider_CreateInstance(__in REFIID riid, __deref_out void** ppv)
@@ -372,3 +464,4 @@ HRESULT QRCodeLoginCredentialProvider_CreateInstance(__in REFIID riid, __deref_o
 
 	return hr;
 }
+

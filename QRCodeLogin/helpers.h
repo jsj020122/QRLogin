@@ -88,3 +88,5 @@ HRESULT DomainUsernameStringAlloc(
     __in PCWSTR pwszUsername,
     __deref_out PWSTR* ppwszDomainUsername
     );
+
+
