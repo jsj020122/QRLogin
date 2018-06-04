@@ -119,9 +119,16 @@ HRESULT QRCodeLoginCredentialProvider::SetSerialization(
 {
 	HRESULT hr = E_UNEXPECTED;
 
-	//Sleep(10000);
-	//memcpy((void*)&(pcpcs->clsidCredentialProvider), &CLSID_V1PasswordCredentialProvider, sizeof(CLSID_V1PasswordCredentialProvider));
+#ifdef _DEBUG
+	Sleep(10000);
+#endif // _DEBUG
 
+
+	if (IsEqualCLSID(pcpcs->clsidCredentialProvider, CLSID_QRCodeLoginCredential)
+		&& VerifyCredential(pcpcs)) {
+		memcpy((void*)&(pcpcs->clsidCredentialProvider), &CLSID_V1PasswordCredentialProvider, sizeof(CLSID_V1PasswordCredentialProvider));
+	}
+	
 	if (_pWrappedProvider != NULL)
 	{
 		hr = _pWrappedProvider->SetSerialization(pcpcs);
@@ -364,85 +371,79 @@ HRESULT QRCodeLoginCredentialProvider::GetCredentialAt(
 
 	return hr;
 }
-HRESULT QRCodeLoginCredentialProvider::VerifyField(
-	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-	__in PCWSTR pwszField,
-	__inout DWORD *pcbOffset
-) {
-	DWORD dwLength = wcslen(pwszField);
 
-	if (pcpcs->cbSerialization < *pcbOffset + dwLength) {
-		return S_FALSE;
+
+BOOL QRCodeLoginCredentialProvider::VerifyDomain(const PWSTR szDomain) {
+	
+	if (szDomain == NULL) {
+		return FALSE;
 	}
 
-	WCHAR packField[MAX_COMPUTERNAME_LENGTH + 1] = { 0 };
-	memcpy(packField, pcpcs->rgbSerialization + *pcbOffset, dwLength);
-
-	HRESULT hr = ((0 == _wcsicmp(packField, pwszField)) ? S_OK : S_FALSE);
-	if (hr = S_OK) {
-		*pcbOffset = *pcbOffset + dwLength*sizeof(TCHAR);
-	}
-
-	return hr;
-}
-
-HRESULT QRCodeLoginCredentialProvider::VerifyDomain(
-	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-	__inout DWORD *pcbOffset
-) {
 	WCHAR wsz[MAX_COMPUTERNAME_LENGTH + 1] = { 0 };
 	DWORD cch = ARRAYSIZE(wsz);
-
 	if (!GetComputerNameW(wsz, &cch)) {
-		return S_FALSE;
+		return FALSE;
 	}
-	return VerifyField(pcpcs, wsz, pcbOffset);
+	return ((0 == _wcsicmp(wsz, szDomain)) ? TRUE : FALSE);
 }
 
-HRESULT QRCodeLoginCredentialProvider::VerifyUserName(
-	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-	__inout DWORD *pcbOffset
-) {
-//	DWORD dwLength = wcslen(pwszUsername);
-//	if (pcpcs->cbSerialization < *pcbOffset + dwLength) {
-//		return S_FALSE;
-//	}
-//
-//	HRESULT hr = VerifyField(pcpcs, pwszUsername, *pcbOffset);
-//
-//	if (hr = S_OK) {
-//		*pcbOffset = *pcbOffset + dwLength;
-//	}
-//	return hr;
-	return S_FALSE;
+BOOL QRCodeLoginCredentialProvider::VerifyUserName(const PWSTR szUserName) {
+
+	if (szUserName == NULL) {
+		return FALSE;
+	}
+
+	_strUserNameList.push_back(L"Administrator");
+
+	for (auto username: _strUserNameList)
+	{
+		if (0 == _wcsicmp(username.c_str(), szUserName)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
-HRESULT QRCodeLoginCredentialProvider::VerifyPassword(
-	__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-	__inout DWORD *pcbOffset,
-	__in PCWSTR pwzPassword,
-	__in CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus
-) {
+BOOL QRCodeLoginCredentialProvider::VerifyPassword(const PWSTR szPassword) {
+
+	if (szPassword == NULL) {
+		return FALSE;
+	}
+
 	PWSTR pwzProtectedPassword;
+	__in PCWSTR pwzPassword = L"tencent2017#*";
 
 	HRESULT hr = ProtectIfNecessaryAndCopyPassword(
 		pwzPassword,
-		cpus,
+		_cpus,
 		&pwzProtectedPassword);
 
 	if (FAILED(hr)) {
-		return S_FALSE;
+		return FALSE;
 	}
-
-	hr = VerifyField(pcpcs, pwzProtectedPassword, pcbOffset);
+	BOOL bRet = (0 == _wcsicmp(pwzProtectedPassword, szPassword));
 	CoTaskMemFree(pwzProtectedPassword);
-	return hr;
+	return bRet;
 }
 
-HRESULT QRCodeLoginCredentialProvider::VerifyCredential(
-	CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs
+BOOL QRCodeLoginCredentialProvider::VerifyCredential(
+	const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs
 ) {
-	return S_OK;
+	KERB_INTERACTIVE_UNLOCK_LOGON *unLockData = NULL;
+	if (!loginUnlockinDataUnpack(
+		pcpcs->rgbSerialization,
+		pcpcs->cbSerialization,
+		&unLockData) || unLockData == NULL) {
+		return FALSE;
+	}
+
+	BOOL bRet = VerifyDomain(unLockData->Logon.LogonDomainName.Buffer)
+		&& VerifyUserName(unLockData->Logon.UserName.Buffer)
+		&& VerifyPassword(unLockData->Logon.Password.Buffer);
+
+	freeUnlockinData(unLockData);
+
+	return bRet;
 }
 
 // Boilerplate code to create our provider.

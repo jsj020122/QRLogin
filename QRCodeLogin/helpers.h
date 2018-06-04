@@ -90,3 +90,12 @@ HRESULT DomainUsernameStringAlloc(
     );
 
 
+BOOL loginUnlockinDataUnpack(
+	BYTE *packData,
+	DWORD cbSize,
+	KERB_INTERACTIVE_UNLOCK_LOGON **retData
+	);
+
+void freeUnlockinData(
+	KERB_INTERACTIVE_UNLOCK_LOGON *&pData
+	);

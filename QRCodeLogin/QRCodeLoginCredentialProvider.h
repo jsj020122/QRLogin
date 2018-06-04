@@ -15,6 +15,7 @@
 
 #include "QRCodeLoginCredential.h"
 #include "helpers.h"
+#include <vector>
 
 class QRCodeLoginCredentialProvider : public ICredentialProvider
 {
@@ -70,31 +71,13 @@ protected:
 private:
 	void _CleanUpAllCredentials();
 
-	HRESULT VerifyCredential(CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs);
+	BOOL VerifyCredential(const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs);
 
+	BOOL VerifyDomain(const PWSTR szDomain);
 
-	HRESULT VerifyField(
-		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-		__in PCWSTR pwszFild,
-		__inout DWORD *pcbOffset
-	);
+	BOOL VerifyUserName(const PWSTR szUserName);
 
-	HRESULT VerifyDomain(
-		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-		__inout DWORD *pcbOffset
-	);
-
-	HRESULT VerifyUserName(
-		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-		__inout DWORD *pcbOffset
-	);
-
-	HRESULT VerifyPassword(
-		__in CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-		__inout DWORD *pcbOffset,
-		__in PCWSTR pwzPassword,
-		__in CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus
-	);
+	BOOL VerifyPassword(const PWSTR szPassword);
 
 
 private:
@@ -108,4 +91,5 @@ private:
 													// credentials.
 	bool                _bEnumeratedSetSerialization;
 	CREDENTIAL_PROVIDER_USAGE_SCENARIO      _cpus; // The usage scenario for which we were enumerated.// in our combobox.
+	std::vector<std::wstring> _strUserNameList;
 };

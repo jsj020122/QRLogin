@@ -38,7 +38,6 @@ STDMETHODIMP QRCodeLoginCredentialFilter::Filter(
 	CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus, DWORD dwFlags,
 	GUID* rgclsidProviders, BOOL* rgbAllow, DWORD cProviders)
 {
-	return E_NOTIMPL;
 	switch (cpus)
 	{
 	case CPUS_LOGON:

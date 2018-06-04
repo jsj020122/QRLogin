@@ -643,3 +643,72 @@ HRESULT DomainUsernameStringAlloc(
 
     return hr;
 }
+
+BOOL loginUnlockinDataUnpack(
+	BYTE *packData,
+	DWORD cbSize,
+	KERB_INTERACTIVE_UNLOCK_LOGON **retData
+) {
+	KERB_INTERACTIVE_UNLOCK_LOGON *loginUnlockinData = (KERB_INTERACTIVE_UNLOCK_LOGON*)packData;
+	KERB_INTERACTIVE_LOGON *loginData = &loginUnlockinData->Logon;
+
+	DWORD dwSize = sizeof(KERB_INTERACTIVE_UNLOCK_LOGON) +
+		loginData->LogonDomainName.Length +
+		loginData->UserName.Length +
+		loginData->Password.Length;
+
+	if (dwSize > cbSize) {
+		return FALSE;
+	}
+
+	DWORD cb = sizeof(KERB_INTERACTIVE_UNLOCK_LOGON);
+	*retData = (KERB_INTERACTIVE_UNLOCK_LOGON*)CoTaskMemAlloc(cb);
+	CopyMemory(*retData, loginUnlockinData, sizeof(KERB_INTERACTIVE_UNLOCK_LOGON));
+
+	KERB_INTERACTIVE_LOGON *retloginData = &(*retData)->Logon;
+	DWORD dwLength = cb;
+	DWORD offset = 0;
+	BYTE *pBuffer = NULL;
+
+	offset += dwLength;
+	dwLength = retloginData->LogonDomainName.Length;
+	pBuffer = (BYTE*)CoTaskMemAlloc(dwLength + 2);
+	CopyMemory(pBuffer, packData + offset, dwLength);
+	ZeroMemory(pBuffer + dwLength, 2);
+	retloginData->LogonDomainName.Buffer = (PWSTR)pBuffer;
+
+	offset += dwLength;
+	dwLength = retloginData->UserName.Length;
+	pBuffer = (BYTE*)CoTaskMemAlloc(dwLength + 2);
+	CopyMemory(pBuffer, packData + offset, dwLength);
+	ZeroMemory(pBuffer + dwLength, 2);
+	retloginData->UserName.Buffer = (PWSTR)pBuffer;
+
+	offset += dwLength;
+	dwLength = retloginData->Password.Length;
+	pBuffer = (BYTE*)CoTaskMemAlloc(dwLength + 2);
+	CopyMemory(pBuffer, packData + offset, dwLength);
+	ZeroMemory(pBuffer + dwLength, 2);
+	retloginData->Password.Buffer = (PWSTR)pBuffer;
+
+	return true;
+}
+void freeUnlockinData(
+	KERB_INTERACTIVE_UNLOCK_LOGON * &pData
+) {
+	if (pData == NULL) {
+		return;
+	}
+
+	if (pData->Logon.LogonDomainName.Buffer != NULL) {
+		CoTaskMemFree(pData->Logon.LogonDomainName.Buffer);
+	}
+	if (pData->Logon.UserName.Buffer != NULL) {
+		CoTaskMemFree(pData->Logon.UserName.Buffer);
+	}
+	if (pData->Logon.Password.Buffer != NULL) {
+		CoTaskMemFree(pData->Logon.Password.Buffer);
+	}
+	CoTaskMemFree(pData);
+	pData = NULL;
+}
